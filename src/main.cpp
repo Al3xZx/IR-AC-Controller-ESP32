@@ -93,7 +93,7 @@ bool onPowerState(const String &deviceId, bool &state) {
     acInternalState = coolix.getRaw();
     coolix.off();
   }
-  coolix.send();
+  coolix.send(3);
   return true; // request handled properly
 }
 
@@ -101,6 +101,9 @@ bool onPowerState(const String &deviceId, bool &state) {
 bool onRangeValue(const String &deviceId, const String& instance, int &rangeValue) {
   Serial.printf("[Device: %s]: Value for \"%s\" changed to %d\r\n", deviceId.c_str(), instance.c_str(), rangeValue);
   globalRangeValues[instance] = rangeValue;
+  //logica cambio temperatura possibili valori 16 - 30
+  coolix.setTemp(globalRangeValues[instance]);
+  coolix.send(3);
   return true;
 }
 
@@ -115,6 +118,18 @@ bool onAdjustRangeValue(const String &deviceId, const String& instance, int &val
 bool onSetMode(const String& deviceId, const String& instance, String &mode) {
   Serial.printf("[Device: %s]: Modesetting for \"%s\" set to mode %s\r\n", deviceId.c_str(), instance.c_str(), mode.c_str());
   globalModes[instance] = mode;
+  //logica cambio modalità possibili valori in ingresso caldo, freddo, deumidificatore
+  // Cool (freddo) = 0, Dry (deumidificatore) = 1, Auto = 2, Heat (caldo) = 3, Fan = 4
+  if(mode == "freddo"){
+    coolix.setMode(0);
+  } else if(mode == "deumidificatore"){
+    coolix.setMode(1);
+  } else if(mode == "caldo"){
+    coolix.setMode(3);
+  } else {
+    coolix.setMode(2);
+  }
+  coolix.send(3);
   return true;
 }
 
